@@ -1,3 +1,4 @@
+Playbook Execution
 ansible-playbook.yml --check
 ansible-playbook.yml --start-at-task "Start httpd service"
 ansible-playbook.yml --tags "install"
@@ -43,7 +44,8 @@ $export ANSIBLE_CONFIG=/opt/ansible-web.cfg (entire session)
 periority 1) environment variable (ex ANSIBLE_CONFIG) $ANSIBLE_CONFIG=/opt/ansible-web.cfg
 periority 2) diffrent ansible.cfg file /opt/web-playbooks, /opt/db-playbooks
 periority 3) /etc/ansible/ansible.cfg
---
+-----
+Gathering facts
 ansible-config list # list all configurations
 ansible-config view # show the current config file
 ansible-config dump # shows the current settings
@@ -52,6 +54,7 @@ ansible-config dump|grep GATHERING
 
 
 -------------
+Ansible installation
 Install pip if not present
 yum install epel-release python-pip
 install ansible using pip
@@ -59,16 +62,52 @@ pip install ansible
 pip install --upgrade ansible
 pip install ansible==2.4
 -----------
+Key Authendication
 ssh-copy-id -i privatekey user@servera
 ansible_ssh_private_key_file=/some-path/private-key
 ansibe_user
 ssh-keygen -f ~/.ssh/ansible
 ssh-copy-id -i ansible.pub ansible@web1
 ---
+Privilage Escalation
 ansible -a 'cat /etc/hosts' all
 export ANSIBLE_GATHERING=explicit ansible-playbook playbook.yml
 lamp-dev1 ansible_host=172.20.1.100 ansible_user=admin ansible_become=yes ansible_become_user=root
 become: yes
 become_method:sudo,pfexec,doas,ksu,runas
 become_user: root
---
+To change the login shell for a remote user while running an Ansible task - become_flags
+ansible web1 -i inventory -m shell -a ' ls -l /home/admin/test.txt' --become --become-method=sudo
+ansible all -m ping --ask-become-pass
+--------
+FAQ
+"{{ }}" - should use for variables
+var: dns_server_ip - should not use "{{}}"
+when: ansible_host != 'web' - should not use "{{}}"
+with_items: "{{ }}" - should use for loops
+ansible_ssh_pass - old way of using method
+ansible_password - new way of using method
+--------------
+LAB - 
+ssh-keygen -f ~/.ssh/john
+ssh-keygen -f ~/.ssh/maria
+ssh-copy-id -i john.pub john@lamp-web
+ssh-copy-id -i maria.pub maria@lamp-db
+# Inventory File
+[web_servers]
+lamp-web ansible_host=172.20.1.100 ansible_user=john ansible_ssh_private_key_file=/home/thor/.ssh/john
+
+[web_servers:vars]
+httpd_port=80
+repository=https://github.com/kodekloudhub/learning-app-ecommerce.git
+
+[db_servers]
+lamp-db ansible_host=172.20.1.101 ansible_user=maria ansible_ssh_private_key_file=/home/thor/.ssh/maria
+
+[db_servers:vars]
+mysqlservice=mysqld
+mysql_port=3306
+dbname=ecomdb
+dbuser=ecomuser
+dbpassword=ecompassword
+---------
