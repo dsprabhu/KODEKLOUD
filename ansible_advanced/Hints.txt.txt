@@ -1,0 +1,74 @@
+ansible-playbook.yml --check
+ansible-playbook.yml --start-at-task "Start httpd service"
+ansible-playbook.yml --tags "install"
+ansible-playbook.yml --skip-tags "install"
+
+
+---
+- debug:
+    var: ansible_facts
+
+- debug:
+    msg: "This is a debug message"
+
+----
+/etc/ansible/ansible.cfg
+gathering = implicit (gather by default gather_facts=true)
+gatthering = explicit ( do not gather by default)
+----
+ansible web1 -i inventory -m setup |grep  "distribution"
+------------
+/etc/ansible/ansible.cfg
+[defaults]
+inventory = /etc/ansible/hosts
+log_path = /var/log/ansible.log
+library=/user/share/my_module/
+roles_path=/etc/ansible/roles
+action_plugins=/usr/share/ansible/plugins/action
+gathering=implicit or ANSIBLE_GATHERING=explicit (environment variable)
+#ssh timeout
+timeout=20
+forks=5
+[inventory]
+enable_plugins = host_list, virtualbox, yaml, constructed
+[privilege_escalation]
+[paramiko_connection]
+[ssh_connection]
+[presistent_connection]
+[colors]
+-----------
+/opt/web-playbooks/ansible.cfg,/opt/db-playbooks/ansible.cfg,/opt/network-playbooks/ansible.cfg,
+$ANSIBLE_CONFIG=/opt/ansible-web.cfg ansible-playbook playbook.yml (single playbook execution)
+$export ANSIBLE_CONFIG=/opt/ansible-web.cfg (entire session)
+periority 1) environment variable (ex ANSIBLE_CONFIG) $ANSIBLE_CONFIG=/opt/ansible-web.cfg
+periority 2) diffrent ansible.cfg file /opt/web-playbooks, /opt/db-playbooks
+periority 3) /etc/ansible/ansible.cfg
+--
+ansible-config list # list all configurations
+ansible-config view # show the current config file
+ansible-config dump # shows the current settings
+ansible-config dump|grep GATHERING
+	DEFAULT_GATHERING(env:ANSIBLE_GATHERING)=explicit
+
+
+-------------
+Install pip if not present
+yum install epel-release python-pip
+install ansible using pip
+pip install ansible
+pip install --upgrade ansible
+pip install ansible==2.4
+-----------
+ssh-copy-id -i privatekey user@servera
+ansible_ssh_private_key_file=/some-path/private-key
+ansibe_user
+ssh-keygen -f ~/.ssh/ansible
+ssh-copy-id -i ansible.pub ansible@web1
+---
+ansible -a 'cat /etc/hosts' all
+export ANSIBLE_GATHERING=explicit ansible-playbook playbook.yml
+lamp-dev1 ansible_host=172.20.1.100 ansible_user=admin ansible_become=yes ansible_become_user=root
+become: yes
+become_method:sudo,pfexec,doas,ksu,runas
+become_user: root
+--
