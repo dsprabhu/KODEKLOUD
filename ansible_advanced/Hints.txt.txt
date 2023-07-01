@@ -111,3 +111,33 @@ dbname=ecomdb
 dbuser=ecomuser
 dbpassword=ecompassword
 ---------
+Additional modules
+- package:
+    name: httpd 
+---------
+ firewalld:
+        source: 172.20.1.101
+        zone: internal
+        state: enabled
+        permanent: yes
+        immediate: yes
+    -----------
+    - name: add additinal condent
+      blockinfile:
+        path: /var/www/html/index.html
+        insertafter: BOF
+        owner: apache
+        group: apache
+        content: |
+           Welcome to KodeKloud!
+           This is Ansible Lab.
+           ------
+           ---
+- name: replace port 80 to 8080
+  hosts: web1
+  tasks:
+  - replace:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: 'Listen 80'
+      replace: 'Listen 8080'
+  - service: name=httpd state=restarted 
