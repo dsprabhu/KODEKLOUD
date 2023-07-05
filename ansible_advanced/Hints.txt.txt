@@ -166,3 +166,29 @@ Additional modules
         path: /usr/share/nginx/html/index.html
         regexp: "This is sample html code"
         replace: "This is KodeKloud Ansible lab"
+
+---
+---
+- hosts: node00
+  tasks:
+    - name: cron job
+      cron:
+        name: Free Memory Check
+        minute: "0"
+        hour: "*/2"
+        job: sh /root/free.sh
+
+---
+- hosts: node00
+  tasks:
+    - name: cron job
+      cron:
+        name: yum update
+        cron_file: /etc/cron.d/ansible_yum
+        minute: "05"
+        hour: "8"
+        weekday: "0"
+        user: root
+        job: "yum -y update"
+        cron_file: ansible_yum
+---------------
