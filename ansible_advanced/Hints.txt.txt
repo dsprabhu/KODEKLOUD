@@ -141,3 +141,28 @@ Additional modules
       regexp: 'Listen 80'
       replace: 'Listen 8080'
   - service: name=httpd state=restarted 
+  ---
+- hosts: web1
+  tasks:
+    - name: install nginx
+      yum:
+        name: nginx
+        state: latest
+
+    - name: start service
+      service: 
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: unarchive
+      unarchive:
+        src: /root/nginx.zip
+        dest: /usr/share/nginx/html
+        remote_src: yes
+
+    - name: replace module
+      replace:
+        path: /usr/share/nginx/html/index.html
+        regexp: "This is sample html code"
+        replace: "This is KodeKloud Ansible lab"
