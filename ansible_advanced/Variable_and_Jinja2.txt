@@ -1,0 +1,94 @@
+# Hints
+a) first run group variable next will be host variable.
+b) first run group variable, second host variable after that play level variable (defined in play book).
+c) first run group variable, second  host variable, third that play level variable and finally extra variable (--extra-variable).
+
+1)command line values (for example, -u my_user, these are not variables)
+2)role defaults (defined in role/defaults/main.yml) 1
+3)inventory file or script group vars 2
+4)inventory group_vars/all 3
+5)playbook group_vars/all 3
+6)inventory group_vars/* 3
+7)playbook group_vars/* 3
+8)inventory file or script host vars 2
+9)inventory host_vars/* 3
+10)playbook host_vars/* 3
+11)host facts / cached set_facts 4
+12)play vars
+13)play vars_prompt
+14)play vars_files
+15)role vars (defined in role/vars/main.yml)
+16)block vars (only for tasks in block)
+17)task vars (only for the task)
+18)include_vars
+19)set_facts / registered vars
+20)role (and include_role) params
+21)include params
+22)extra vars (for example, -e "user=my_user")(always win precedence)
+
+Role defaults
+Group vars
+Host vars
+Host facts
+Play vars
+Role vars
+Include vars
+Set facts
+Extra vars
+
+## Registering variable
+- shell: cat /etc/hosts
+  register: result
+
+- debug:
+    var: result (print the variable)
+##outpu of registering variable
+"rc": 0, -> return code success
+"start: -> start time of the command
+"end" -> end time of the command
+"delta" -> time of execution
+"stdout" -> standed error on the command
+
+## print standed output of the command
+ - shell: cat /etc/hosts
+  register: result
+
+- debug:
+    var: result.stdout
+
+## print the return code of the command
+ - shell: cat /etc/hosts
+  register: result
+
+- debug:
+    var: result.rc
+
+----------------
+---
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: stat module help to find the file info
+      stat:
+        path: /var/run
+      register: your_variable
+
+    # for your reference, check the outputs of these
+    - debug: var=your_variable.stat
+
+    # your code goes here...
+    - shell: echo "{{ your_variable.stat }}" > /tmp/by_ansible
+    -----------
+    ---
+- name: help me fix it playbook
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: alternative way to gather facts about remote host
+      setup: filter='ansible_distribution' 
+      register: facts
+
+    - debug: var=facts.ansible_facts.ansible_distribution
+
+    - shell: echo "{{facts.ansible_facts.ansible_distribution}}" > /tmp/output.txt
+    
