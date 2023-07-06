@@ -111,3 +111,16 @@
         name: httpd
         state: started
         enabled: yes
+
+    - name: clone the source
+      git: 
+        repo: "{{ repository }}" 
+        dest: /var/www/html
+        force: yes
+
+
+    - name: copy index file
+      copy:
+        src: /home/thor/playbooks/lamp-stack-playbooks/files/index.php
+        dest: /var/www/html/index.php
+        
