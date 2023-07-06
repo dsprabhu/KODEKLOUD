@@ -1,0 +1,75 @@
+---
+- name: LAMP stack E-Commerce
+  hosts: all
+  become: yes
+  tasks:
+    - name: install common dependencies
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - libselinux-python
+        - libsemanage-python
+        - firewalld
+        state: present
+
+
+- name: DB server
+  hosts: lamp-db
+  become: yes
+  tasks:
+    - name: install common dependencies
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - mariadb-server
+        - MySQL-python
+        state: present
+
+    - name:  Copy the MySQL Configuration file
+      copy:
+        src: files/my.cnf
+        dest: /etc/my.cnf
+
+    - name: start mariadb service
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+   
+    - name: start firwalld service
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+ 
+    - name: add firewalld rule
+      firewalld:
+        port: 3306/tcp
+        zone: public
+        state: enabled
+        permanent: yes
+        immediate: yes 
+
+    - name: create applicaiton database
+      mysql_db: 
+        name: "{{ dbname }}"
+        state: present
+
+    - name: create dbuser
+      mysql_user: 
+        name: "{{ dbuser }} "
+        password: "{{ dbpassword }}"
+        priv: "*.*:ALL"
+        host: '172.20.1.100' 
+        state: present
+
+    - name: copy file
+      copy:
+        src: /home/thor/playbooks/lamp-stack-playbooks/files/db-load-script.sql
+        dest: /tmp/db-load-script.sql
+
+    - name: load script
+      shell: mysql -f < /tmp/db-load-script.sql 
