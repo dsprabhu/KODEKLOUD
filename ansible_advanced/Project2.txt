@@ -65,6 +65,7 @@
         priv: "*.*:ALL"
         host: '172.20.1.100' 
         state: present
+      ignore_errors: yes
 
     - name: copy file
       copy:
@@ -73,3 +74,40 @@
 
     - name: load script
       shell: mysql -f < /tmp/db-load-script.sql 
+
+- name: install web server
+  hosts: lampweb
+  become: yes
+  tasks:
+    - name: install common dependencies
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - httpd
+        - php
+        - php-mysql
+        - git
+        state: present
+
+
+    - name: start firwalld service
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+ 
+    - name: add firewalld rule
+      firewalld: port={{ httpd_port }}/tcp state=enabled permanent=yes immediate=yes 
+
+    - name: modify index file in httpd
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: "DirectoryIndex index.html"
+        replace: "DirectoryIndex index.php"
+ 
+    - name: start httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
