@@ -192,3 +192,70 @@ Additional modules
         job: "yum -y update"
         cron_file: ansible_yum
 ---------------
+   when: ansible_facts['distribution'] == "CentOS" and "RedHat"
+ansible_facts['distribution_major_version'] == "7" 
+----
+single node and multinode (MariaDB -172.20.1.101 , httpd and PHP - 172.20.1.101)
+identify system (linux centos)
+install firewall (install, start service ,immediate)
+-
+install httpd php php-mysql
+configure firewall (firewall-cmd --permanent --zone=public --add-port=80\tcp,reload)
+configure httpd (vi /etc/httpd/conf/httpd.conf # configure directoryindex to use index.php instead of index.html)
+start httpd and enable it.
+-
+install MariaDB-server
+configure MariaDB (vi /etc/my.cnf #configure the file with right port)
+start MariaDB and enable
+configure firewall (firewall-cmd --permanent --zone=public --add-port=3306\tcp,reload firewall)
+configure database
+load data
+(firewall-cmd --list)
+-
+install Php
+download code
+test
+-
+/etc/my.cnf
+--
+single node deployment
+$mysql
+MariaDB > CREATE DATABASE ecomdb;
+MariaDB > CREATE USER 'ecomuser'@'localhost' IDENTIFIED BY 'ecompasspassword';
+MariaDB > GRANT ALL PRIVILEGES ON *.* TO 'ecomuser'@'localhost';
+MariaDB > FLUSH PRIVILEGES;
+$mysql < db-load-script.sql
+
+multinode deployment
+$mysql
+MariaDB > CREATE DATABASE ecomdb;
+MariaDB > CREATE USER 'ecomuser'@'172.20.102' IDENTIFIED BY 'ecompasspassword';
+MariaDB > GRANT ALL PRIVILEGES ON *.* TO 'ecomuser'@'172.20.102';
+MariaDB > FLUSH PRIVILEGES;
+$mysql < db-load-script.sql (https://github.com/kodekloudhub/learning-app-ecommerce/blob/master/assets/db-load-script.sql)
+
+----
+yum install -y git
+git clone https://github.com/<application>.git /var/www/html/
+#update index.php to use the right database address,name and credentials
+curl https://localhost
+--
+Multinode index.php on webserver
+<?php
+  $link = mysqli_connect('172.20.1.101', 'ecomuser', 'ecompassword', ecomdb);
+
+  if ($link) {
+  $res = mysqli_query($link, "select * from products;");
+  while ($row = mysqli_fetch_assoc($res)) { ?>
+----
+katacoda.com
+https://github.com/kodekloudhub/learning-app-ecommerce.git
+
+ansible all -i inventory -m shell -a 'hostname'
+
+
+- name: Create Application Database
+      mysql_db: name={{ dbname }} state=present
+
+    - name: Create Application DB User
+      mysql_user: name={{ dbuser }} password={{ dbpassword }} priv=*.*:ALL host='172.20.1.100' state=present
