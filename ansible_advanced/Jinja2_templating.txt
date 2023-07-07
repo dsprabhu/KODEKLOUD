@@ -16,5 +16,31 @@ The name is {{first_name|default("James")}}{{my_name}} -> The name is James Bond
 {{ 100|random }} -> Random number
 {{ ["The","name","is","Bond]|join("")}} -> The name is Bond
 --------------------
+#Loops
+
+1)for loop
+{% for number in [0,1,2,3,4] %}
+{{ number }}
+{% endfor %} 
+
+output
+0
+1
+2
+3
+4
+
+#Conditions
+
+2)if loop
+{% for number in [0,1,2,3,4] %}
+{% if number ==2 %}
+{{ number }}
+{% endif %} 
+
+{% endfor %} 
+
+output
+2
 
 
