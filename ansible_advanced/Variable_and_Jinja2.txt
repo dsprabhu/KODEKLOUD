@@ -92,4 +92,114 @@ Extra vars
 
     - shell: echo "{{facts.ansible_facts.ansible_distribution}}" > /tmp/output.txt
 -------------------------
- 
+ Magic variables - Hosts
+ cat inventory
+  web1 ansible_host=172.20.1.101 
+  web2 ansible_host=172.20.1.102 dns_server=10.5.5.4
+  web3 ansible_host=172.20.1.103
+
+  cat playbook.yml
+    ---
+    - name: print dns server
+      hosts: all
+      tasks:
+      - debug:
+          msg: "{{ hostsvars['web2'].dns_server }}
+
+output
+TASK[debug]*****************
+ok[web1] {
+  "dns_server": 10.5.5.4
+}
+ok[web2] {
+  "dns_server": 10.5.5.4
+}
+ok[web3] {
+  "dns_server": 10.5.5.4
+}
+-------------------------------------------
+ Magic variables hostvars
+ ---
+    - name: print dns server
+      hosts: all
+      tasks:
+      - debug:
+          msg: "{{ hostsvars['web2'].ansible_host }}
+          msg: "{{ hostsvars['web2'].ansible_facts.architecture }}"
+          msg: "{{ hostsvars['web2']['ansible_facts']['mounts'] }}"
+-------------------------------------
+ Magic variables -groups 
+ cat inventory
+  web1 ansible_host=172.20.1.101 
+  web2 ansible_host=172.20.1.102
+  web3 ansible_host=172.20.1.103
+  [web_servers]
+  web1
+  web2
+  web3
+  [americas]
+  web1
+  web2
+  [asia]
+  web3
+
+playbook.yml
+msg: '{{ groups['americas'] }}'
+output
+web1
+web2
+
+--------------------------
+ Magic variables -group_names
+ cat inventory
+  web1 ansible_host=172.20.1.101 
+  web2 ansible_host=172.20.1.102
+  web3 ansible_host=172.20.1.103
+  [web_servers]
+  web1
+  web2
+  web3
+  [americas]
+  web1
+  web2
+  [asia]
+  web3
+
+  playbook.yml
+  msg: '{{ group_names }}' #web1
+  output
+  web_servers
+  americas
+  -------------------
+
+  Magic variables - inventory_hostname
+ cat inventory
+  web1 ansible_host=172.20.1.101 
+  web2 ansible_host=172.20.1.102
+  web3 ansible_host=172.20.1.103
+  [web_servers]
+  web1
+  web2
+  web3
+  [americas]
+  web1
+  web2
+  [asia]
+  web3
+
+  playbook.yml
+  msg: '{{ inventory_hostname}}' #web1
+  output
+  web1
+
+------------------------------------
+This is my full inventory hostname {{inventory_hostname}} #Fill variable for full inventory hostname
+This is my short inventory hostname {{inventory_hostname_short}} #Fill variable for short inventory hostname
+This is my inventory file {{inventory_file}} #Fill variable for inventory file
+
+
+node00.host | CHANGED | rc=0 >>
+This is my full inventory hostname node00.host #Fill variable for full inventory hostname
+This is my short inventory hostname node00 #Fill variable for short inventory hostname
+This is my inventory file /home/thor/playbooks/inventory #Fill variable for inventory file
+-----------------
