@@ -91,4 +91,5 @@ Extra vars
     - debug: var=facts.ansible_facts.ansible_distribution
 
     - shell: echo "{{facts.ansible_facts.ansible_distribution}}" > /tmp/output.txt
-    
+-------------------------
+ 
