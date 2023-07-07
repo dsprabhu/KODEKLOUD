@@ -1,1 +1,20 @@
 ##Jinja2
+#String manipulation
+The name is {{my-name}} -> The name is Bond
+The name is {{my-name|upper}} -> The name is BOND 
+The name is {{my-name|lower}} -> The name is bond  
+The name is {{my-name|title}} -> The name is Bond
+The name is {{my-name|replace("Bond","Bourn")}} -> The name is Bourn
+The name is {{first_name|default("James")}}{{my_name}} -> The name is James Bond
+----------------
+#Filters - List and set
+{{ [1,2,3]|min }}  -> 1
+{{ [1,2,3]|max }}  -> 3
+{{ [1,2,3,2]|unique }}  -> 1,2,3
+{{ [1,2,3,4|union([4,5]) }}  -> 1.2,3,4,5
+{{ [1,2,3,4|intersect([4,5]) }}  -> 4
+{{ 100|random }} -> Random number
+{{ ["The","name","is","Bond]|join("")}} -> The name is Bond
+--------------------
+
+
