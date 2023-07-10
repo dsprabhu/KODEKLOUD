@@ -133,5 +133,83 @@ nameserver 10.1.1.6
 nameserver 10.1.1.8
 nameserver 10.8.8.1
 nameserver 8.8.8.8
-----------------
+----------------------------------------------------
 
+Source Data  
+
+{
+  "hosts": [
+    {
+      "name": "web1",
+      "ip_address": "192.168.5.4"
+    },
+    {
+      "name": "web2",
+      "ip_address": "192.168.5.5"
+    },
+    {
+      "name": "web3",
+      "ip_address": "192.168.5.8"
+    },
+    {
+      "name": "db1",
+      "ip_address": "192.168.5.9"
+    }
+  ]
+}
+
+
+Jinja2 code - eample1
+
+{% for host in hosts -%}
+{{ host["name"] }} {{ host["ip_address"] }}  
+{% endfor %}
+
+jinja2 code -eample2
+
+{% for host in hosts -%}
+{{ host.name }} {{ host.ip_address}}  
+{% endfor %}
+
+output
+----
+web1 192.168.5.4  
+web2 192.168.5.5  
+web3 192.168.5.8  
+db1 192.168.5.9 
+----------------------------------------
+source data   (Update the jinja2 expression to use an if block to update /etc/hosts file only if the hostname contains web.)
+{
+  "hosts": [
+    {
+      "name": "web1",
+      "ip_address": "192.168.5.4"
+    },
+    {
+      "name": "web2",
+      "ip_address": "192.168.5.5"
+    },
+    {
+      "name": "web3",
+      "ip_address": "192.168.5.8"
+    },
+    {
+      "name": "db1",
+      "ip_address": "192.168.5.9"
+    }
+  ]
+}
+jinja2 -code
+-------
+{% for host in hosts -%}
+{% if "web" in  host.name -%}
+{{ host.name }} {{ host.ip_address-}}
+{% endif %}
+{% endfor %}
+
+output
+---
+web1 192.168.5.4
+web2 192.168.5.5
+web3 192.168.5.8
+------------------------------------------------------------
