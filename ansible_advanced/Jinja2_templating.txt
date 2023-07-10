@@ -4,7 +4,7 @@ The name is {{my-name}} -> The name is Bond
 The name is {{my-name|upper}} -> The name is BOND 
 The name is {{my-name|lower}} -> The name is bond  
 The name is {{my-name|title}} -> The name is Bond
-The name is {{my-name|replace("Bond","Bourn")}} -> The name is Bourn
+{"my-name" ='The name is Bond'} - The name is {{my-name|replace("Bond","Bourn")}} -> output -The name is Bourn
 The name is {{first_name|default("James")}}{{my_name}} -> The name is James Bond
 ----------------
 #Filters - List and set
@@ -42,5 +42,35 @@ output
 
 output
 2
+-------------------------------------------
+#examples
+example.j2 
+The list of the cars contains the following cars
+{%for item in cars %}
+{{item}}
+{% endif %} 
+
+---
+- hosts: localhost
+  vars:
+    cars: ['Mercedes','MG','Ford']
+  tasks:
+    - template:
+        src: example.j2 
+        dest: /root/carslist.txt
+
+output
+Mercedes
+MG
+Ford
+------
+{
+  "words": "Everyone was busy, so I went to the movie alone. I was very proud of my nickname throughout high school but today- I couldn’t be any different to what my nickname was. Wow, does that work? She works two jobs to make ends meet; at least, that was her reason for not having time to join us."
+}
+
+{{ words|wordcount  }}
+
+Ans: 58
+-------------
 
 
