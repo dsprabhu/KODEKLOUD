@@ -213,3 +213,47 @@ web1 192.168.5.4
 web2 192.168.5.5
 web3 192.168.5.8
 ------------------------------------------------------------
+Teamplates 
+
+redis.conf.j2
+---
+bind {{ ip_address }}
+protected-mode yes
+port {{ redis_port | default('6379')}}
+tcp-backlog 511
+timeout 0
+tcp-keepalive {{tcp_keepalive|default ('300')}}
+daemonize not
+supervised no 
+-----------
+redis.conf
+-
+redis.conf.j2
+---
+bind 192.168.1.100
+protected-mode yes
+port 6379
+tcp-backlog 511
+timeout 0
+tcp-keepalive 300
+daemonize not
+supervised no 
+----------------
+variable
+--
+nameservers:
+  - 10.1.1.2
+  - 10.1.13
+
+/etc/resolv.conf.j2
+ {% for name_server in name_servers %}
+ nameserver {{name_server}}
+ {% endfor %}
+ ------------------------------
+ [db_servers]
+lamp-db ansible_host=172.20.1.101 ansible_ssh_private_key_file=/home/thor/.ssh/maria ansible_user=maria mysqlservice=mysqld mysql_port=3306 dbname=ecomdb dbuser=ecomuser dbpassword=ecompassword
+
+[web_servers]
+lampweb ansible_host=172.20.1.100 ansible_ssh_private_key_file=/home/thor/.ssh/john ansible_user=john httpd_port=80 repository=https://github.com/kodekloudhub/learning-app-ecommerce.git
+
+---------------------
