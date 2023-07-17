@@ -59,4 +59,112 @@ Loops.yml
                state: present
              when:  item.required == true
 ---------------------------------------------------------
-            
+---
+- name: Check status of a service and email if its download
+hosts: localhost
+tasks:
+  - command: service httpd status
+    register: result
+
+  - mail:
+      to: admin@compay.com
+      subject: Service Alert
+      body: HTTPD service is download
+    when: result.stdout.find('down') != -1
+
+---------------
+---
+- name: Install apache
+  hosts: all
+  tasks:
+    # your code goes here...
+    - name: install apache2 in ubuntu server
+      apt:
+        name: apache2
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: install httpd in centos 
+      yum:
+        name: httpd
+        state: present
+      when: ansible_distribution == "CentOS"
+----------------       
+
+---
+- hosts: web2
+  gather_facts: false
+  tasks:
+    - shell: dpkg -l git
+      register: check_if_git_installed
+      ignore_errors: true
+
+    - debug: var=check_if_git_installed
+    - shell: echo 'Oops, git is missing' > /tmp/is_git_installed.txt
+      when: check_if_git_installed.rc != 0
+
+    - shell: git --version > /tmp/is_git_installed.txt
+      when: check_if_git_installed.rc == 0
+      -----
+---
+---
+- name: git package verification
+  hosts: web2
+  gather_facts: true
+  tasks:
+    - name: create a file
+      file:
+        path: /tmp/is_git_installed.txt
+        state: touch
+
+    - name: get the rpm package facts
+      package_facts:
+        manager: "auto"
+
+    - name: git not present
+      copy:
+        content: "Oops, git is missing"
+        dest: /tmp/is_git_installed.txt
+      when: "'git' not in ansible_facts.packages"
+      ignore_errors: true
+
+    - name: git present
+      debug: 
+        msg: "{{ansible_facts.packages['git'][0].version}}"
+      when: "'git' in ansible_facts.packages"
+      register: git_register
+
+    - name: git present
+      copy:
+        content: "{{git_register}}"
+        dest: /tmp/is_git_installed.txt
+      when: "'git' in ansible_facts.packages
+
+-----------------------------
+---
+- hosts: web2
+  gather_facts: false
+  tasks:
+    - shell: dpkg -l git
+      register: check_if_git_installed
+      ignore_errors: true
+
+    - debug: var=check_if_git_installed
+    - shell: echo 'Oops, git is missing' > /tmp/is_git_installed.txt
+      when: check_if_git_installed.rc != 0
+
+    - shell: git --version > /tmp/is_git_installed.txt
+      when: check_if_git_installed.rc == 0
+---------------------
+---
+- name: copy script if not present
+  gather_facts: yes
+  hosts: web2
+  vars:
+    remote_dest: /usr/local/bin/report_status.sh
+  tasks:
+    - copy:
+        src: report_status.sh
+        dest: "{{remote_dest}}"
+      when: copy_file_only_if is defined and copy_file_only_if|bool
+      
