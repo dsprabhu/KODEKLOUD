@@ -1,0 +1,60 @@
+   ---
+       - name: install packages in loops
+         hosts: all 
+         vars:
+           packages:
+             - name: nginx
+               required: true
+             - name: mysql
+               required: true
+             - name: apache
+               required: false
+
+      tasks:
+        - name: Install "{{ item.name }}" on Debain
+          apt:
+            name: "{{ item.name }}"
+            state: present
+
+          loop: "{{ packages }}"
+  ----
+  The below is explan about the above play book
+
+  ---
+       - name: install packages in loops
+         hosts: all 
+         vars:
+           packages:
+             - name: nginx
+               required: true
+         tasks:
+           - apt:
+               name: "{{item.name}}"
+               state: present
+             when:  item.required == true
+  ---
+       - name: install packages in loops
+         hosts: all 
+         vars:
+           packages:
+             - name: mysql
+               required: true
+         tasks:
+           - apt:
+               name: "{{item.name}}"
+               state: present
+             when:  item.required == true
+  ---
+       - name: install packages in loops
+         hosts: all 
+         vars:
+           packages:
+             - name: apache
+               required: true
+         tasks:
+           - apt:
+               name: "{{item.name}}"
+               state: present
+             when:  item.required == true
+---------------------------------------------------------
+            
