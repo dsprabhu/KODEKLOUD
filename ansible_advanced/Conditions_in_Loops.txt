@@ -167,4 +167,37 @@ tasks:
         src: report_status.sh
         dest: "{{remote_dest}}"
       when: copy_file_only_if is defined and copy_file_only_if|bool
+
+----------------
+when: ansible_facts['os_family'] == "Ubuntu"
+when: (ansible_distribution == "Debian" ) or (ansible_distribution == "Ubuntu")
+when: (ansible_facts['os_family'] == 'Debian') and ('"nginx/1.8.0" not in currentNginxVersion.stdout')
+when: (reboot_file.stat.exists) and (inventory_hostname == 'aws-proxy-server')
+ansible_distribution == 'Ubuntu' and ansible_distribution_version|version_compare('15.04', '>=')
+---------------------------------------------------
+      when:
+        - ansible_facts['distribution'] == "CentOS"
+        - ansible_facts['distribution_major_version'] == "6"
+----------------
+ansible.builtin.command: ls /etc/hosts
+        register: contents1
+ansible.builtin.command: ls /home/ubuntu/hello
+        register: contents2
+ansible.builtin.debug:
+          msg: "Directory is empty"
+        when: contents1.stdout == "" or contents2.stdout == ""
+-----------------------
+- name: Check empty directory
+win_shell: dir {{ dirpath}}
+register: checkdir
+
+ansible.builtin.debug:
+msg: "{{ dirpath }} folder does not exist"
+when: checkdir is failed
+--------
+- service:
+        name: apache2
+        state: restarted
+      when: webservers in group_names
+-----------------------------------
       
