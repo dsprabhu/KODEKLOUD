@@ -1,0 +1,105 @@
+Filters mostly used for formatting or transforming the data. 
+Then based on the output any other tasks are performed. 
+Based on the output a decision making can be done,
+similarly, the output of after templating can work as input to other tasks.
+Also, filtering is very useful in debugging.
+{% ... %} for Statements
+{{ ... }} for Expressions to print to the template output
+{# ... #} for Comments not included in the template output
+#  ... ## for Line Statements
+
+Filtering syntax is like the below examples, 
+where the left side is the input to templating and the right side is the filter provided by ansible. 
+The output can be printed on-screen or can be registered in a variable.
+Templates when used with debug modules, add more verbosity and troubleshooting information to the output of a playbook. 
+
+{{ <input>| <filter> }}
+
+----------
+default filter example
+---
+- hosts: localhost 
+  vars:
+  var_1: 5 
+  tasks:
+    - set_fact:
+        test_var: "{{ var_1 | default(2) }}"
+    - debug:
+        var: test_var
+---------
+---
+hosts: localhost tasks:
+set_fact:
+test_var: "{{ var_1 | default(2) }}"
+debug:
+var: test_var
+--------------------------
+There are some mathematics-related modules as well, like abs, int, pow, root.
+https://jinja.palletsprojects.com/en/3.1.x/templates/#builtin-filters
+
+jinja-filters.abs(x, /)
+Return the absolute value of the argument.
+
+---
+hosts: localhost vars:
+var_one: -2.5 
+tasks:
+  - set_fact:
+      var_abs: "{{ var_one | abs }}" 
+      var_pow: "{{ var_one | pow(5) }}"
+  - debug:
+      msg: Absolute value -2.5 is "{{ var_abs }}"
+  - debug:
+      msg: Fifth power of -2.5 is "{{ var_pow }}"
+---
+
+
+
+jinja-filters.int(value: Any, default: int = 0, base: int = 10) → int¶
+
+Convert the value into an integer. If the conversion doesn’t work it will return 0. 
+You can override this default using the first parameter. 
+You can also override the default base (10) in the second parameter, 
+which handles input with prefixes such as 0b, 0o and 0x for bases 2, 8 and 16 respectively. 
+The base is ignored for decimal numbers and non-string values
+
+
+--------
+
+To convert some string into upper or lower, we can use map To check this,
+---
+hosts: localhost 
+vars:
+  var_one: Test-machine 
+tasks:
+  debug:
+    msg: var_one is now {{ var_one | map('upper')| list}}
+---
+---------------
+Some filters can give you the hash of some string or data. 
+---
+hosts: localhost 
+vars:
+  var_one: apple 
+tasks:
+  - debug:
+      msg: Variable value is "{{ var_one | hash('sha1') }}"
+------
+To get the last name of a file path like ‘test.ini’ from ‘/etc/test.ini’
+
+{{ path | basename }}
+-----
+To add a quote use like below
+echo {{ string_value | quote }}
+----------
+To use one value on true and others on false from a list of two.
+
+{{ (name == "peter") | ternary('male’, ‘female') }}
+
+To use one to true, another to false and third to null
+
+{{ enabled | ternary('on’, ‘off', omit) }}
+------------
+regex_search
+regex_replace
+k8s_config_resource_name
