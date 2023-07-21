@@ -1,0 +1,43 @@
+The task involves dependencies, install mysql,start db, install flask, run webserver.
+
+when multiple servers involed, for example 3 servers, Ansible runs 
+it runs each task across all servers in parallel at the same time.
+it waits for the task to finish on all servers before proceeding to the next task.
+
+in this case, Ansible install dependencies accros all servers and waits for it to complete on all servers
+befor proceeding to the next task.
+-------------
+linear strategy
+
+If one server is slower than the others, it will slow down the entire playbook execution
+this is called linear strategy and this is the default strategy.
+-----
+free strategy
+
+- name: Deploy web application
+  hosts: server1,server2,server3
+  strategy: free
+
+with the fre strategy when the playbook is run, each server runs all of its tasks independenly of the other server
+and does not wait for the task to finish on the other servers.
+
+------
+Third option
+Assume we have 5 servers but we would like ansible to execute three at a time
+This is where batch processing helps us. This is not a separte strategy this is based on linear strategy,
+but you can control the number of servers executed together or in a batch.
+--------------
+serial
+
+- name: Deploy web application
+  hosts: server1,server2,server3,server4,server5
+  serial:3
+
+you can specify how many servers you would like to process together. Here Ansible runs tasks on three servers first 
+once that finishes all the tasks, ansible runs to proceed on the next batch (next 2 srvers).
+
+ -----------
+ Also,note that you can create your custom stragy by developing a strategy plugin yourself.
+ --------------------
+ fork = 5 (bydefault)
+ 
