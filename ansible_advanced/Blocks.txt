@@ -1,0 +1,30 @@
+Error Handling
+
+---
+- hosts: server1
+  tasks:
+    - block:
+        - name: Install mysql
+          yum:
+            name: mysql-server
+            state: present
+        -  name: start mysql service
+           service:
+             name: mysql-server
+             state: started
+      become_user: db-become_user
+      when: ansible_facts['distribution'] == 'CentOS'
+      rescue:
+        - mail:
+            to: admin@company.com
+            subject: Installation failed
+            body: DB install failed at {{ansible_failed_task.name}}
+
+      always:
+        - mail:
+            to: admin@company.com
+            subject: Iinstallation status
+            body: DB install status - {{ansible_failed_result}}
+-------------------------------------------------------------------
+
+     
