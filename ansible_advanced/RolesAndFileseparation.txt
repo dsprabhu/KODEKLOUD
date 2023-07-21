@@ -1,0 +1,11 @@
+File separation
+-----------
+playbook.yml
+inventory
+host_vars
+|
+---- web1.yml
+---web2.yml
+---web3.yml
+
+Name the file with the same name as that of the host.
