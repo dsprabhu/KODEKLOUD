@@ -91,4 +91,44 @@ Add an always section and configure the last task to always run. Do not modify a
         - debug:
             msg: "This task always runs!"
 ----------------------------
-Error Handling
+Error Handling - Task failure
+
+any_errors_fatal: true
+---------------
+- name:
+  hosts:
+  any_errors_fatal: true
+
+The fist two task complete and failed in 3rd task it just fails and exits the playbook at that point.
+In multiple server case , playbook exit from failed server so the remain servers will be completed.
+if we want to stop execution even one of the servers failed, add an option any errors
+fatal and set its value to true. This way, if any task fails on one server, Ansible stops
+execution of the entire playbook and exits.
+
+max_fail_percentage:30
+----------
+- name:
+  hosts:
+  max_fail_percentage:30
+
+But the same time I don't want to end up with just 2 out of the 100 servers being configued.
+If many of them are failing, then there's something seriouly wrong that i need to take a lookup.
+in such case , i need to put a condition. if more that 30% of the servers fail at a particular task,
+and I want to stop. so I can use max fail percentage option.
+------
+ignore_errors
+
+The playbook execution will not stop and fail instead it will ignore and countinue.
+----------------------------------------
+failed_when
+------
+- command: cat /var/log/server.log
+  register: command_output
+  failed_when: 'ERROR' in command_output.stdout
+
+Want to store the logs in the server.log file. We would like to check for errors in the file.
+if there are any errors in that file, we would like to fail the playbook.
+for this we would execute cat var/log/server.log command. This command returs the contens of the log file.
+As long as the file is present and it is readable the task will complete successfully.
+however we would like to fail it if it has error messages in it.
+------------------------------------------
