@@ -1,4 +1,4 @@
-Error Handling
+Blocks
 
 ---
 - hosts: server1
@@ -91,3 +91,4 @@ Add an always section and configure the last task to always run. Do not modify a
         - debug:
             msg: "This task always runs!"
 ----------------------------
+Error Handling
