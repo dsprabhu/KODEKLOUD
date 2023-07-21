@@ -1,4 +1,4 @@
-File separation
+File separation - includes
 -----------
 playbook.yml
 inventory
@@ -97,6 +97,35 @@ tasks/web.yml
   - include_tasks: tasks/web.yml
 ------------
 
+Let us continue to improve our lamp stack project. Now that we have learned to organize tasks into separate files, let's move the variables to it's respective files. Create a host_vars and group_vars directory and move all variables to them. No variables to be defined in the main inventory file. Only the below parameters are to be configured as host variables. All other parameters are to be configured as group variables for the respective groups:
+
+Host Variables:
+
+ansible_host
+
+ansible_ssh_private_key_file
+
+ansible_user
+
+
+The inventory file is located at /home/thor/playbooks/lamp-stack-playbooks/inventory. You may edit its contents but not its filename or location.
+
+[thor@ansible-controller lamp-stack-playbooks]$ cat inventory 
+[db_servers]
+lamp-db ansible_host=172.20.1.101 ansible_ssh_private_key_file=/home/thor/.ssh/maria ansible_user=maria mysqlservice=mysqld mysql_port=3306 dbname=ecomdb dbuser=ecomuser dbpassword=ecompassword
+
+[web_servers]
+lampweb ansible_host=172.20.1.100 ansible_ssh_private_key_file=/home/thor/.ssh/john ansible_user=john httpd_port=80 repository=https://github.com/kodekloudhub/learning-app-ecommerce.git
+
+-----
+Let's move the tasks to 3 separate files under the tasks directory. Create 3 files common.yml, db.yml and web.yml and move the associated tasks into each of them. Then include the tasks in the main playbook.
+
+
+Do not modify the tasks or task names. Only move them to the respective files
+---
+TASK [include_tasks] ******************************************************************************************
+fatal: [lampweb]: FAILED! => {"reason": "no action detected in task. This often indicates a misspelled module name, or incorrect module path.\n\nThe error appears to have been in '/home/thor/playbooks/lamp-stack-playbooks/tasks/common.yml': line 2, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n---\n- name: Deploy lamp stack application\n  ^ here\n"}
+fatal: [lamp-db]: FAILED! => {"reason": "no action detected in task. This often indicates a misspelled module name, or incorrect module path.\n\nThe error appears to have been in '/home/thor/playbooks/lamp-stack-playbooks/tasks/common.yml': line 2, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n---\n- name: Deploy lamp stack application\n  ^ here\n"}
 
 
 
