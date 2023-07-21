@@ -132,3 +132,35 @@ for this we would execute cat var/log/server.log command. This command returs th
 As long as the file is present and it is readable the task will complete successfully.
 however we would like to fail it if it has error messages in it.
 ------------------------------------------
+The playbook ~/playbooks/httpd_check_errors.yml installs httpd on web1 node, 
+then checks for errors in the error log and then starts the httpd service.
+Our goal is for the playbook to fail if the error check (second task) detects errors in the log file. 
+However, with the current playbook, the error check (second task) has no impact as it is only viewing the error log file. 
+Update the playbook so that it fails if it detects a string Error in the file /var/log/httpd/error_log.
+The task is already there. Only implement error handling. 
+Use ~/playbooks/inventory file to test the playbook that is already present on ansible controller.
+
+---
+- name: Install httpd
+  hosts: web1
+  gather_facts: no
+  tasks:
+    - name: Install httpd
+      yum:
+        name: httpd
+        state: present
+    - name: Check httpd error logs
+      command: cat /var/log/httpd/error_log
+      register: results
+
+    - name: start service
+      service:
+        name: httpd
+        state: started
+      failed_when: '"Error" in results.stdout'
+
+    - name: Create a file
+      file:
+        path: /tmp/file
+        state: touch
+------------------------------------------------------
