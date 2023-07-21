@@ -38,3 +38,89 @@ web_servers.yml
 ------------
 dns_server: 10.1.1.5
 
+include_vars
+----------
+- name: 
+  hosts:
+  tasks:
+  - include_vars:
+    file: /opt/apps/common-data/email/info.yml
+    name: email_data
+
+  - mail:
+    to: {{email_data.admin_email}}
+    subject:
+    body:
+
+/opt/apps/common-data/email/info.yml
+admin_email: admin@company.com
+---
+The variables from the file will be loaded into the variable email_data
+which can then be used in the form email_data.admin_email.
+
+------
+$ ansible-inventory -i inventory/ -y
+all:
+  children:
+    ungrouped: {}
+    web_servers:
+      hosts:
+        web1:
+          ansible_hosts: 172.20.1.100
+        web2:
+          ansible_hosts: 172.20.1.101
+------------
+playbook.yml
+---
+- name: 
+  hosts: web-db-server
+  tasks:
+  - name: install mysql package
+  - name: start mysql service
+  - name: configure database
+  - name: install python flask
+  - name: run web server
+---
+tasks/db.yml
+  - name: install mysql package
+  - name: start mysql service
+  - name: configure database
+
+tasks/web.yml
+ - name: install python flask
+ - name: run web server
+-----
+- name: 
+  hosts: web-db-server
+  tasks:
+  - include_tasks: tasks/db.yml 
+  - include_tasks: tasks/web.yml
+------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
