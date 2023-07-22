@@ -124,3 +124,17 @@
         src: /home/thor/playbooks/lamp-stack-playbooks/files/index.php
         dest: /var/www/html/index.php
         
+------------------------------------
+-------
+- name: create application db
+  mysql_db: name={{db_name}} state=present
+
+- name: create DB user
+  mysql_user:
+    name: "{{db_user}}"
+    password: "{{db_user_password}}"
+    priv: '*.*:ALL'
+    state: present
+    host: '%'
+
+------------
