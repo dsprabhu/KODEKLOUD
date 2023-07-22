@@ -1,0 +1,42 @@
+Linux   Apache  MariaDB Php
+
+Linux
+----
+Install firewall
+
+Apache
+------
+Install httpd
+configure httpd
+configure firewall
+start httpd
+
+MariaDB
+-------
+Install MariaDB
+configure MariaDB   
+start MariaDB
+configure firewall
+configure Database
+Load DATA
+
+Php
+----
+install php
+configure code 
+--------------------------
+Proper order Task - LAMP stack
+
+Install firewall - { yum install firewalld;service firewalld start;systemctl enable firewalld }
+Install MariaDB - {yum install mariadb-server}
+configure MariaDB - {vi /etc/my.cnf #configure the file with the right port}
+start MariaDB - {service mariadb start;systemctl enable mariadb}
+configure firewall - {firewalld-cmd --permanent --zone=public --add-port=3306/tcp;firewall-cmd --reload}
+configure Database - {mysql; CREATE DATABASE ecomdb; CREATE USER 'ecomuser'@'localhost' IDENTIFIED BY 'ecompassword'; GRANT ALL PRIVILEGES ON *.* TO 'ecomuser'@'localhost';FLUSH PRIVILEGES;}
+Load DATA - {mysql < db-load-script.sql}
+Install httpd - {yum install httpd php php-mysql}
+configure firewall - {firewall-cmd --permanent --zone=public --add-port=80/tcp;firewall-cmd --reload}
+configure httpd - {vi /etc/httpd/conf/httpd.conf #configure DirectoryIndex to use index.php instead of index.html}
+start httpd - {service httpd start;systemctl enable httpd}
+Download code - {yum install git;git clone https://github.com/<application>.git /var/www/html #update index.php to use the right database address, name and credentials}
+Test - {curl http://localhost}
