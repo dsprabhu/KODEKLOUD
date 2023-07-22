@@ -90,34 +90,36 @@ tasks/web.yml
   - name: install python flask
   - name: run web server
 ---------------------------------------
-- name: 
+- name: playbook.yml
   hosts: web-db-server #groupname
   tasks:
     - include_tasks: tasks/db.yml 
     - include_tasks: tasks/web.yml
 
-db.yml
+tasks/db.yml
 ------
 #dont mention hosts
 - name: install mysql package
 - name: start mysql service
-web.yml
+tasks/web.yml
 -----
 #dont mention hosts
  - name: install python flask
  - name: run web server
+
+I could create new playbooks and include only those tasks that are relevant for me.
+playbook-common.yml
+- name: Install dependency
+  hosts: web-db
+  tasks:
+    - include_tasks: tasks/common.yml
 ------------
 
 Let us continue to improve our lamp stack project. Now that we have learned to organize tasks into separate files, let's move the variables to it's respective files. Create a host_vars and group_vars directory and move all variables to them. No variables to be defined in the main inventory file. Only the below parameters are to be configured as host variables. All other parameters are to be configured as group variables for the respective groups:
-
 Host Variables:
-
 ansible_host
-
 ansible_ssh_private_key_file
-
 ansible_user
-
 
 The inventory file is located at /home/thor/playbooks/lamp-stack-playbooks/inventory. You may edit its contents but not its filename or location.
 
