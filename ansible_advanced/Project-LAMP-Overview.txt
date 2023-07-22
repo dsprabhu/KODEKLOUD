@@ -40,3 +40,17 @@ configure httpd - {vi /etc/httpd/conf/httpd.conf #configure DirectoryIndex to us
 start httpd - {service httpd start;systemctl enable httpd}
 Download code - {yum install git;git clone https://github.com/<application>.git /var/www/html #update index.php to use the right database address, name and credentials}
 Test - {curl http://localhost}
+-----------------------------------------
+
+LAMP stack - multinode
+
+IP address of web server: 172.20.1.102
+IP address of DB server: 172.20.1.101
+
+configure Database - {mysql; CREATE DATABASE ecomdb; CREATE USER 'ecomuser'@'172.20.1.102' IDENTIFIED BY 'ecompassword'; GRANT ALL PRIVILEGES ON *.* TO 'ecomuser'@'172.20.1.102';FLUSH PRIVILEGES;}
+Download code -
+update the php code - |
+                   <?php>
+                   $link = mysqli_connect ('172.20.1.101', 'ecomuser', 'ecompassword'
+-------------------------------
+                         
