@@ -140,8 +140,155 @@ TASK [include_tasks] ***********************************************************
 fatal: [lampweb]: FAILED! => {"reason": "no action detected in task. This often indicates a misspelled module name, or incorrect module path.\n\nThe error appears to have been in '/home/thor/playbooks/lamp-stack-playbooks/tasks/common.yml': line 2, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n---\n- name: Deploy lamp stack application\n  ^ here\n"}
 fatal: [lamp-db]: FAILED! => {"reason": "no action detected in task. This often indicates a misspelled module name, or incorrect module path.\n\nThe error appears to have been in '/home/thor/playbooks/lamp-stack-playbooks/tasks/common.yml': line 2, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n---\n- name: Deploy lamp stack application\n  ^ here\n"}
 
+----------
+1) Let us continue to improve our lamp stack project. Now that we have learned to organize tasks into separate files, let's move the variables to it's respective files. Create a host_vars and group_vars directory and move all variables to them. No variables to be defined in the main inventory file. Only the below parameters are to be configured as host variables. All other parameters are to be configured as group variables for the respective groups:
+
+Host Variables:
+
+ansible_host
+
+ansible_ssh_private_key_file
+
+ansible_user
 
 
+The inventory file is located at /home/thor/playbooks/lamp-stack-playbooks/inventory. You may edit its contents but not its filename or location.
+
+
+ mkdir host_vars group_var
+ touch host_vars/lamp-db.yml
+ touch host_vars/lampweb.yml
+ touch group_vars/db_servers.yml
+ touch group_vars/web_servers.yml
+
+
+2) Let's move the tasks to 3 separate files under the tasks directory. Create 3 files common.yml, db.yml and web.yml and move the associated tasks into each of them. Then include the tasks in the main playbook.
+Do not modify the tasks or task names. Only move them to the respective files
+mkdir tasks
+vi tasks/common.yml
+- name: Install common dependencies
+  yum:
+    name:
+      - libselinux-python
+      - libsemanage-python
+      - firewalld
+
+vi tasks/db.yml
+- name: Install MariaDB package
+  yum:
+    name:
+      - mariadb-server
+      - MySQL-python
+    state: installed
+
+- name: Create Mysql configuration file
+  template: src=templates/my.cnf.j2 dest=/etc/my.cnf
+
+- name: Start MariaDB Service
+  service: name=mariadb state=started enabled=yes
+
+- name: Start firewalld
+  service: name=firewalld state=started enabled=yes
+
+- name: insert firewalld rule
+  firewalld: port={{ mysql_port }}/tcp permanent=true state=enabled immediate=yes
+
+- name: Create Application Database
+  mysql_db: name={{ dbname }} state=present
+
+- name: gather facts from lampweb
+  setup:
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  with_items: "{{ hostvars[groups['web_servers'][0]].groups.web_servers }}"
+
+- name: Create Application DB User
+  mysql_user: name={{ dbuser }} password={{ dbpassword }} priv=*.*:ALL host={{ hostvars['lampweb']['ansible_facts']['eth0']['ipv4']['address'] }} state=present
+
+- name: Move db-load-script to db host
+  template:
+    src: templates/db-load-script.sql.j2
+    dest: /tmp/db-load-script.sql
+
+- name: Load Inventory Data
+  shell: mysql -f < /tmp/db-load-script.sql
+
+vi tasks/web.yml
+Add below given content
+
+- name: Install httpd and php
+  yum:
+    name:
+      - httpd
+      - php
+      - php-mysql
+    state: present
+
+- name: Install web role specific dependencies
+  yum: name=git state=installed
+
+- name: Start firewalld
+  service: name=firewalld state=started enabled=yes
+
+- name: insert firewalld rule for httpd
+  firewalld: port={{ httpd_port }}/tcp permanent=true state=enabled immediate=yes
+
+- name: Set index.php as the default page
+  tags: "Set index.php as the default page"
+  replace:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: 'DirectoryIndex index.html'
+    replace: 'DirectoryIndex index.php'
+
+- name: http service state
+  service: name=httpd state=started enabled=yes
+
+- name: Copy the code from repository
+  git: repo={{ repository }} dest=/var/www/html/  force=yes
+
+- name: Creates the index.php file
+  template: src=templates/index.php.j2 dest=/var/www/html/index.p
+
+3) If not done already include the tasks in the main deploy-lamp-stack.yml
+vi deploy-lamp-stack.yml
+--
+
+- name: Deploy lamp stack application
+  hosts: all
+  become: yes
+  tasks:
+    - include_tasks: tasks/common.yml
+
+    # Install and Configure Database
+- name: Deploy lamp stack application
+  hosts: lamp-db
+  gather_facts: yes
+  become: yes
+  tasks:
+    - include_tasks: tasks/db.yml
+
+- name: Deploy lamp stack application
+  hosts: lampweb
+  gather_facts: yes
+  become: yes
+  tasks:
+    - include_tasks: tasks/web.yml
+------------------------
+templates/cat db-load-script.sql.j2
+USE {{ dbname }};
+CREATE TABLE products (id mediumint(8) unsigned NOT NULL auto_increment,Name varchar(255) default NULL,Price varchar(255) default NULL, ImageUrl varchar(255) default NULL,PRIMARY KEY (id)) AUTO_INCREMENT=1;
+INSERT INTO products (Name,Price,ImageUrl) VALUES ("Laptop","100","c-1.png"),("Drone","200","c-2.png"),("VR","300","c-3.png"),("Tablet","50","c-5.png"),("Watch","90","c-6.png"),("Phone Covers","20","c-7.png"),("Phone","80","c-8.png"),("Laptop","150","c-4.png");
+
+templates/cat my.cnf.j2 
+[mysqld]
+innodb-buffer-pool-size=5242880
+# datadir=/var/lib/mysql
+# socket=/var/lib/mysql/mysql.sock
+user=mysql
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+port={{ mysql_port }}
+---------------------
 
 
 
