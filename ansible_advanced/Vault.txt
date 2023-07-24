@@ -1,0 +1,35 @@
+ansible-vault encrypt inventory
+ansible-vault view inventory
+ansible-vault create inventory
+ansible-playboo -i inventory playbook --ask-vault-pass
+ansible-playboo -i inventory playbook -vault-password-file ~/.vault-pass.txt
+ansible-playboo -i inventory playbook -vault-password-file ~/.vault-pass.py
+
+ansible-vault decrypt decrypt_me.yml --vault-password-file vault_pass.txt
+
+ansible-playbook -i inventory copy_secrets.yml --vault-password-file vault_pass.txt
+--
+
+- hosts: all
+  tasks:
+    - name: copy a secret file to remote hosts
+      copy:
+        src: secrets_file.txt
+        dest: /root/.secrets_file.txt
+      ### your playbok goes here...
+
+-----------------
+Edit /etc/ansible/ansible.cfg file and make sure to set vault_password_file = /home/thor/playbooks/vault_pass.txt. Also make sure /home/thor/playbooks/vault_pass.txt file permissions are 640
+
+Please use the following YAML file and place it under ~/playbooks/copy_secrets.yml:
+
+---
+
+- hosts: all
+  tasks:
+    - name: copy a secret file to remote hosts
+      copy:
+        src: secrets_file.txt
+        dest: /root/.secrets_file.txt
+
+------------------------------------
