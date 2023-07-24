@@ -288,9 +288,41 @@ user=mysql
 # Disabling symbolic-links is recommended to prevent assorted security risks
 symbolic-links=0
 port={{ mysql_port }}
----------------------
+---------------------------------------------------------------------------------------
 
+$ ansible-galaxy init mysql
 
+my-playbooks
+ |
+ --playbook.yml 
+ --inventory
+ --- roles
+       |
+       mysql
+         |
+         -------README.md
+         -------templates
+         -------tasks
+         -------handleres
+         -------vars
+         -------defaults
+         -------meta
+------------------------------
+$ ansible-galaxy search mysql
+$ ansible-galaxy list
+$ ansible-config dump | grep ROLE
+$ ansible-galaxy install geerlingguy.mysql
+$ ansible-galaxy install geerlingguy.mysql -p ./roles
+playbook.yml
+---
+- name: install and configure MySQL
+  hosts: db-server
+  roles:
+    - role: geerlingguy.mysql
+      become: yes
+      vars:
+        mysql_user_name: db-user
+-------
 
 
 
