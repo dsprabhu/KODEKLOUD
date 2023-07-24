@@ -324,9 +324,33 @@ playbook.yml
         mysql_user_name: db-user
 -------
 
+1) Let's start using roles. In the ~/playbooks/db directory we are attempting to configure mysql on a database server. A partially developed playbook is available. We have planned to use a role in the playbook.
+First, install the kodekloud1.mysql role on the ansible controller.
 
+ansible-galaxy install kodekloud1.mysql
+ansible-config dump | grep ROLE
 
+2)Update the playbook to use the newly created role to configure the database server.
 
+deploy_db.yml
+- name: Deploy MySQL Server
+  hosts: db_server
+  roles:
+    - role: kodekloud1.mysq
+
+3) Let's configure a web server now. Navigate to the web directory. Install the geerlingguy.nginx role inside roles directory within the web directory.
+ansible-galaxy install geerlingguy.nginx -p roles
+
+4) Update the playbook to use the role geerlingguy.nginx to install nginx web server
+Pass in an additional parameter to the role to NOT configure the service to be enabled at startup. Use the parameter nginx_service_enabled. Check roles/geerlingguy.nginx/defaults/main.yml for more details.
+---
+- name: Deploy Web Server
+  hosts: web_server
+  roles:
+    - name: geerlingguy.nginx
+      vars:
+        nginx_service_enabled: no
+        
 
 
 
