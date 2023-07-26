@@ -1,4 +1,7 @@
-1) Add an entry for node00 in ~/playbooks/inventory file. IP address of node00 host is 172.20.1.100 and SSH user and password is root and Passw0rd. We have a list of users in ~/playbooks/data/users.yml file. There are two groups in there admins and developers which have list of different users. Create a playbook ~/playbooks/add_users.yml to perform below given tasks on node00 node:
+1) Add an entry for node00 in ~/playbooks/inventory file. IP address of node00 host is 172.20.1.100 and SSH user and password is root and Passw0rd. 
+We have a list of users in ~/playbooks/data/users.yml file. 
+There are two groups in there admins and developers which have list of different users. 
+Create a playbook ~/playbooks/add_users.yml to perform below given tasks on node00 node:
 
 
 a. Add all users given in users.yml on node00.
