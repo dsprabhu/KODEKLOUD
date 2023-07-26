@@ -1,0 +1,74 @@
+1) Add an entry for node00 in ~/playbooks/inventory file. IP address of node00 host is 172.20.1.100 and SSH user and password is root and Passw0rd. We have a list of users in ~/playbooks/data/users.yml file. There are two groups in there admins and developers which have list of different users. Create a playbook ~/playbooks/add_users.yml to perform below given tasks on node00 node:
+
+
+a. Add all users given in users.yml on node00.
+
+b. Make sure home directory for all users under developers group is /var/www and for admins it should be default.
+
+c. Set password d3v3l0p3r for all users under developers group and adm$n$ for users under admins group. Make sure to use Ansible vault to encrypt the passwords, use ~/playbooks/secrets/vault.txt file as vault secret file.
+
+d. All users under admins group must be added as sudo user, for that simply make them member of wheel group on node00
+
+ cat data/users.yml 
+admins:
+  - rob
+  - david
+  - joy
+
+developers:
+  - tim
+  - ray
+------------------------------------------------------------------
+
+
+2) Using a playbook ~/playbooks/apache.yml (create new if doesn't exist) perform the below given tasks on node01:
+
+
+a. Install httpd and php packages.
+
+b. Change default document root of Apache to /var/www/html/myroot in default Apache config /etc/httpd/conf/httpd.conf. Make sure /var/www/html/myroot path exists.
+
+c. There is a template ~/playbooks/templates/phpinfo.php.j2 on ansible controller node. Copy this template to Apache document root on node01 host as phpinfo.php file and make sure owner and group owner is apache user.
+
+d. Start and enable httpd service.
+
+e. Add rule in firewalld public zone to open http port 80 for public access so that phpinfo.php page is accessible in browser, also rule should be permanent.
+
+CheckCompleteIncomplete
+[thor@ansible-controller playbooks]$ cat templates/phpinfo.php.j2 
+<?php
+phpinfo();
+?>
+------------
+
+3) We have php, nginx and mariadb installed on node02 and have a DB mydb created there. The user to connect to DB is myuser and password is mypassword. Create a playbook ~/playbooks/database.yml to perform below given tasks:
+
+
+a. Start nginx and mariadb services.
+
+b. Delete all default files/directories from nginx document root /usr/share/nginx/html/
+
+c. Download a zip archive from https://github.com/indercodes/ansible-1100-mock-nginx/raw/master/index.php.zip and extract it in /usr/share/nginx/html/
+
+d. The archive have an index.php file to check DB connectivity. Replace some required DB details in the file using replace or lineinfile module:
+
+$database = "database"; to $database = "mydb";
+
+$username = "user"; to $username = "myuser";
+
+$password = "password"; to $password = "mypassword";
+
+e. Restart nginx after making required changes.
+
+CheckCompleteIncomplete
+
+------------
+4) Create a playbook facts.yml under ~/playbooks directory on Ansible controller. In this playbook using blockinfile module create a file facts.txt under /root on node02 host and add below given block in it. You will need to enable facts gathering for this task.
+
+This is Ansible managed node `<hostname-of-host> `
+IP address of host is `<ip-address-of-host>`
+Its OS family is `<os-family>`
+
+After that make a copy of this file as index.html under /usr/share/nginx/html/
+
+----------------
