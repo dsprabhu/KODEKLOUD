@@ -72,20 +72,79 @@ ansible-vault encrypt_string 'd3v3l0p3r' --name 'devel_pwd'
 
 a. Install httpd and php packages.
 
-b. Change default document root of Apache to /var/www/html/myroot in default Apache config /etc/httpd/conf/httpd.conf. Make sure /var/www/html/myroot path exists.
+b. Change default document root of Apache to /var/www/html/myroot in default Apache config /etc/httpd/conf/httpd.conf. 
+Make sure /var/www/html/myroot path exists.
 
-c. There is a template ~/playbooks/templates/phpinfo.php.j2 on ansible controller node. Copy this template to Apache document root on node01 host as phpinfo.php file and make sure owner and group owner is apache user.
+c. There is a template ~/playbooks/templates/phpinfo.php.j2 on ansible controller node. 
+Copy this template to Apache document root on node01 host as phpinfo.php file and make sure owner and group owner is apache user.
 
 d. Start and enable httpd service.
 
-e. Add rule in firewalld public zone to open http port 80 for public access so that phpinfo.php page is accessible in browser, also rule should be permanent.
+e. Add rule in firewalld public zone to open http port 80 for public access so that phpinfo.php page is accessible in browser,
+ also rule should be permanent.
 
 CheckCompleteIncomplete
 [thor@ansible-controller playbooks]$ cat templates/phpinfo.php.j2 
 <?php
 phpinfo();
 ?>
-------------
+
+
+
+---
+- name: useraddition
+  hosts: localhost
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Install httpd and php
+      yum:
+        name:
+          - httpd
+          - php
+          - php-mysql
+        state: present
+
+    - name: create Directory /var/www/html/myroot
+      file:
+        path: /var/www/html/myroot
+        state: directory
+        owner: apache
+        group: apache
+
+    - name: Set index.php as the default page
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: 'DocumentRoot /var/www/html/'
+        replace: 'DocumentRoot /var/www/html/myroot'
+   
+    - name: Set index.php as the default page
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: 'DirectoryIndex index.html'
+        replace: 'DirectoryIndex index.php'
+
+    - name: Creates the index.php file
+      template: 
+        src=templates/phpinfo.php.j2 
+        dest=/var/www/html/myroot/phpinfo.php
+        owner: apache
+        group: apache
+
+    - name: start firwalld service
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+ 
+    - name: add firewalld rule
+      firewalld:
+        port: 80/tcp
+        zone: public
+        state: enabled
+        permanent: yes
+        immediate: yes 
+-----------------------------------------------------------------------------------------------------
 
 3) We have php, nginx and mariadb installed on node02 and have a DB mydb created there. The user to connect to DB is myuser and password is mypassword. Create a playbook ~/playbooks/database.yml to perform below given tasks:
 
