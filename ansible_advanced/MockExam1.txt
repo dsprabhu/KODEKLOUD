@@ -27,7 +27,7 @@ ansible-vault encrypt_string 'adm$n$' --name 'admin_pwd'
 ansible-vault encrypt_string 'd3v3l0p3r' --name 'devel_pwd'
   ---
 - name: useraddition
-  hosts: localhost
+  hosts: node00
   gather_facts: false
   become: yes
   tasks:
@@ -93,7 +93,7 @@ phpinfo();
 
 ---
 - name: useraddition
-  hosts: localhost
+  hosts: node00
   gather_facts: false
   become: yes
   tasks:
@@ -102,7 +102,6 @@ phpinfo();
         name:
           - httpd
           - php
-          - php-mysql
         state: present
 
     - name: create Directory /var/www/html/myroot
