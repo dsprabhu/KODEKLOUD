@@ -21,6 +21,48 @@ admins:
 developers:
   - tim
   - ray
+
+  ---
+- name: useraddition
+  hosts: localhost
+  gather_facts: false
+  become: yes
+  tasks:
+    - ansible.builtin.include_vars:
+        file: users.yml
+
+    - ansible.group
+        name: "{{item}}"
+        state: present
+      loop:
+        - admins
+        - developers
+
+    - name: userdeletion from admins and developers group
+      ansible.builtin.user:
+        name: "{{item}}"
+        group: admins
+        password: "{{ 'adm$n$' | password_hash('sha512') }}"
+        state: absent
+      with_items:
+        - "{{admins}}"
+
+    - name: userdeletion from admins and developers group
+      user:
+        name: "{{item}}"
+        group: developers
+        home: /var/www
+        password: "{{ 'd3v3l0p3r' | password_hash('sha512') }}"
+        state: absent
+      with_items:
+        - "{{developers}}"
+
+     - name: add users to sudo wheel
+       sudoers:
+         name: wheel
+         user: "{{item}}"
+       with_item:
+         - "{{admins}}"
 ------------------------------------------------------------------
 
 
