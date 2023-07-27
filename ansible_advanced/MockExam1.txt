@@ -130,6 +130,11 @@ phpinfo();
         owner: apache
         group: apache
 
+   - name: start httpd service
+     service:
+       name: httpd
+       state: started
+       enabled: yes
     - name: start firwalld service
       service:
         name: firewalld
@@ -145,12 +150,29 @@ phpinfo();
         immediate: yes 
 -----------------------------------------------------------------------------------------------------
 
-3) We have php, nginx and mariadb installed on node02 and have a DB mydb created there. The user to connect to DB is myuser and password is mypassword. Create a playbook ~/playbooks/database.yml to perform below given tasks:
+3) We have php, nginx and mariadb installed on node02 and have a DB mydb created there. 
+The user to connect to DB is myuser and password is mypassword. 
+Create a playbook ~/playbooks/database.yml to perform below given tasks:
 
 
 a. Start nginx and mariadb services.
 
+- name: start nginx service
+     service:
+       name: "{{ item }}"
+       state: started
+       enabled: yes
+      loop:
+        - nginx
+        - mariadb-server
+
 b. Delete all default files/directories from nginx document root /usr/share/nginx/html/
+
+- name: remove files
+    shell:
+       name: "{{ item }}"
+      3
+      
 
 c. Download a zip archive from https://github.com/indercodes/ansible-1100-mock-nginx/raw/master/index.php.zip and extract it in /usr/share/nginx/html/
 
