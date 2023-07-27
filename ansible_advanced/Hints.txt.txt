@@ -259,3 +259,56 @@ ansible all -i inventory -m shell -a 'hostname'
 
     - name: Create Application DB User
       mysql_user: name={{ dbuser }} password={{ dbpassword }} priv=*.*:ALL host='172.20.1.100' state=present
+-------------------------------------------------
+---
+- name: useraddition
+  hosts: localhost
+  gather_facts: false
+  become: yes
+  tasks:
+    - ansible.builtin.include_vars:
+        file: users.yml
+
+    - ansible.builtin.debug:
+        msg: "{{admins.0, admins.1, admins.2}}"
+
+    - name: userdeletion from admins and developers group
+      ansible.builtin.user:
+        name: "{{item}}"
+        state: absent
+      with_items:
+        - "{{ admins }}"
+        - "{{ developers }}"
+-----------------------------------
+---
+- name: useraddition
+  hosts: localhost
+  gather_facts: false
+  become: yes
+  tasks:
+    - ansible.builtin.include_vars:
+        file: users.yml
+
+    - ansible.group
+        name: "{{item}}"
+        state: present
+      loop:
+        - admins
+        - developers
+
+    - name: userdeletion from admins and developers group
+      ansible.builtin.user:
+        name: "{{item}}"
+        group: admins
+        state: absent
+      with_items:
+        - "{{admins}}"
+
+    - name: userdeletion from admins and developers group
+      ansible.builtin.user:
+        name: "{{item}}"
+        group: developers
+        state: absent
+      with_items:
+        - "{{developers}}"
+
