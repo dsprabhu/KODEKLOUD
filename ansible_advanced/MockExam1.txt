@@ -22,6 +22,7 @@ developers:
   - tim
   - ray
 -----
+vault_password_file = /home/centos/vault/password.txt
 ansible-vault encrypt_string 'adm$n$' --name 'admin_pwd'
 ansible-vault encrypt_string 'd3v3l0p3r' --name 'devel_pwd'
   ---
