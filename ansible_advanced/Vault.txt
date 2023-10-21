@@ -1,7 +1,7 @@
 ansible-vault encrypt inventory
 ansible-vault view inventory
 ansible-vault create inventory
-ansible-playboo -i inventory playbook --ask-vault-pass
+ansible-playbook -i inventory playbook --ask-vault-pass
 ansible-playboo -i inventory playbook -vault-password-file ~/.vault-pass.txt
 ansible-playboo -i inventory playbook -vault-password-file ~/.vault-pass.py
 
