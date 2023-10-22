@@ -1,0 +1,21 @@
+### 
+
+Node: Pysical or virtual which kubernetes is installed. Node is the worker machine that is containers by lauched by kuterneties. It is also known as minions.
+
+Cluster: its a setup of Nodes group together. multiple nodes sharing loads
+
+Master: who is managing the reponsible for managing the cluster. cluster member information is stored. Responsible for failover. Master is another node.
+
+Components:
+    API server: Frontend for kubernetes. user,management devices, command line interfaces all talked to api server to interact with kubernet cluster.
+    
+    etcd: (et cd) Distributed reliable key value store. stores all the information about the nodes in the cluster distrubution manner. Responsible for implementing the logs within the cluster to ensure there are no conflect between the masters.
+    
+    Kubelet:
+    
+    Container Runtime:
+    
+    Controller: Act as brain behind for the orchestration.
+    
+    Scheduler: Responsible for distrubuting works or containers across multiple nodes. Asggine the work for newly created container nodes.
+

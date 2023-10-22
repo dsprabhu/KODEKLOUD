@@ -1,0 +1,35 @@
+## introduction for KUBERNETES absoulte beginners
+### The Kubernetes Trilogy
+1. Lab Environment
+2. Pre-requisites
+3. PODs, Deployments
+4. Networking Basics
+5. Services
+6. Micro-Services Architechure
+7. Demos
+8. Coding exercis
+
+### K8s overview
+Continer orchestration technology
+Continer + Orchestration
+### continer
+ Docker is one of the most popular continer technology.
+
+ Docker = { container (webserver(Lib+Dep))} + { container (Database(Lib+Dep))} + { container (messaging(Lib+Dep))} + { container (orchestratoin(Lib+Dep))}
+
+ Continers = Isolation {(own process) + (own newwork) + (own maounts)}
+
+ Types of contianer = LXC LXD LXCFS LXCRI
+
+ Docker utilizes LXC container.
+
+ LXC features = kernel namespaces (ipc,uts,mount,pid,network,user) , Apparmor/SELinux profile, Seccomp policies, Kernel capabilities, CGroups (control gropups).
+
+ Docker Image = Docker container1 + Docker container2 + Docker contaier 3
+(template)             (running instances)
+
+ Docker Package =
+
+ Docker Teamplate =
+
+ Docker plan =
