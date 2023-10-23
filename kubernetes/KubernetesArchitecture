@@ -1,21 +1,52 @@
-### 
+## Kubernetes Mater and worker and a set of componets that make up kubernetes. 
 
-Node: Pysical or virtual which kubernetes is installed. Node is the worker machine that is containers by lauched by kuterneties. It is also known as minions.
+Node: Pysical or virtual which kubernetes is installed. 
+      Node is the worker machine that is containers by lauched by kuterneties. It is also known as minions.
 
-Cluster: its a setup of Nodes group together. multiple nodes sharing loads.
+Cluster: Set of Nodes group together. multiple nodes sharing loads.
 
-Master: who is managing the reponsible for managing the cluster. cluster member information is stored. Responsible for failover. Master is another node.
+Master: Managing the cluster. cluster member information is stored. 
+        Responsible for failover. Master is another node.
+        wathces over the node in the clusters, is reponsible for the actuall orchestration of containers on the worker nodes.
 
 Components:
-    API server: Frontend for kubernetes. user,management devices, command line interfaces all talked to api server to interact with kubernet cluster.
+    API server: Act as frontend for kubernetes. 
+                user,management devices, command line interfaces all talked to api server to interact with kubernet cluster.
     
-    etcd: (et cd) Distributed reliable key value store. stores all the information about the nodes in the cluster distrubution manner. Responsible for implementing the logs within the cluster to ensure there are no conflect between the masters.
+    etcd service: (et cd) Distributed reliable key value store. 
+                   stores all the information about the nodes in the cluster distrubuter manner. 
+                   Responsible for implementing the logs within the cluster to ensure there are no conflect between the masters.
     
-    Kubelet:
+    Kubelet service: Its a Agent that runs each nodes in the cluster.
+                     Ensure that the containers are running onthe nodes are expected.
+                         
+    Container Runtime: Container Runtime is the underling software that is used to run containers in our case it happens to be Docker. 
+                       But other container run time are there for exmaple, RKT (rocket), CRI-O (cryyo).
+
+    Controllers: Act as brain behind for the orchestration.
+                 Responsible for responding when nodes,containers and endpoind goes down.
+                 Controlllers make decision to bring up new containers in such cases.
     
-    Container Runtime:
-    
-    Controller: Act as brain behind for the orchestration.
-    
-    Scheduler: Responsible for distrubuting works or containers across multiple nodes. Asggine the work for newly created container nodes.
+    Schedulers: Responsible for distrubuting works or containers across multiple nodes. 
+                It looks for newly created container and asggine the work for nodes.
+
+### How does one node become a master and others slave or how are these componets distripbuted accross nodes?
+
+    The containers are hosted in worker node or minion. To run docker containers we need container runtime installed where container runtime falls.
+    The Mater server has the kube API srver and that is what makes it a master </>kube-apiserver.
+    The worker nodes have the kubelet agent that is resposible for interacting with a masters </>kubelet.
+    Kubelet agent is reponsible to provide health information of the worker node and carry out actions requested by the master on the worker nodes.
+    All the information gathered as stored in a key value store(et cd framwork )on the master.
+    The master also has the control manager and the scheduler.
+
+### Kubectl tool is used to deploy and manage applications on a kubernetes cluster.
+
+    To deploy applicaton on the cluster: kubectl run hello-minikube
+    To view information about the cluster: kubectl cluster-info
+    To list out all the node part of the cluster: kubectl get nodes 
+
+
+
+
+
 
