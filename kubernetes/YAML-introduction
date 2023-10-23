@@ -1,0 +1,45 @@
+## YAML
+Dictionary is an unordered collection( Here Banna and grapes in Dictionary value - no matter , it should work)
+lists are ordered collection ( Here orage, apple in fruits array should be in same order, other wise value will be modifed )
+
+### key value pair
+Fruit: Apple
+Vegetable: Carrot
+Liquid: water
+Meat: Chicken
+
+### Array/Lists
+Fruits:
+- Orange
+- Apple
+- Banna
+
+Vegetables:
+- Carrot
+- Cauliflower
+- Tomato
+
+### Dictionary/Map
+Banna:
+    Calories: 105
+    Fat: 0.4 g
+    Carbs: 27 g
+
+Grapes:
+    Calories:62
+    Fat: 0.3 g
+
+### Key Value/Dictornary/Lists
+Fruits:
+    - Banna:
+        Calories: 105
+        Fat: 04 g
+        Carbs: 27 g
+    
+    - Grape:
+        calories: 62
+        Fat: 0.3 g
+
+
+
+

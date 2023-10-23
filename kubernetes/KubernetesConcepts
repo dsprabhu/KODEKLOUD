@@ -1,0 +1,62 @@
+### PODs with YAML
+pod-deinition.yml
+1) A kubernetes definition file always contains 4 top level fields.
+    apiVersion:
+    kind:
+    metadata:
+
+    spec:
+2) apiVersion - Kubernetes API you're using to create the ojects.
+3) kind - refers type of object trying to create. example.. POD,Service,ReplicaSet,Deployment
+4) metadata - data is about the oject 
+
+    apiVersion: v1 (String)
+    kind: Pod (String)
+    metadata:          (Dictinary)
+      name: myapp-pod
+      labels:
+        app: myapp
+
+Under "metadata" the name is a string value so you can "name" your pod myapp-pod.
+the "labels" is a dictionary within the metata dictionary 
+------------------------
+ ### incorrect
+ metadata:          
+      name: myapp-pod
+        labels:
+            app: myapp
+In this case "labels" has more spaces on the left than name and so it is now a child of the name property instead of a sibling. which is incorrect. also the two poperties must have more spaces than its parrent which is metadata so that it's intended to the right a little bit.
+
+metadata:          
+name: myapp-pod
+labels:
+   app: myapp
+
+In this case all three of them have the same number of spaces before them and so they are all siblings. which is not correct.
+-----------------------
+apiVersion: v1
+kind: Pod 
+metadata: 
+- name: myapp-pod
+- labels:
+    app: myapp
+    type: front-end
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx
+
+
+It is important to note that under metadata you can only specify name or lables or anything else that kubernetes expects to be under metada. you cannot add any other property as you wish under this.
+However, under labels you can have any kind of key or value pairs as you see fit.
+
+There are hundreds of pods running a front end application and hundreds of pods running a backend application or a database.
+
+Spec is a Dictnory.
+containers is list/arry
+(- name) - indeicatate that this is the first item in th list in the list is a diconary. 
+once the file is created , run kubectl create
+
+$ kubectl create -f pod-definition.yml
+$ kubectl get pods
+$ kubectl describe pod myapp-pod

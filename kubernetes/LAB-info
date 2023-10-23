@@ -1,0 +1,6 @@
+### what is the flavor and version of Opeating system on which the kubernetes nodes are running?
+$ kubectl get nodes -o wide
+### How many nodes are part of the cluster?
+$ kubectl get nodes
+### what is the version of Kubernetes running on the nodes?
+$ kubectl version
