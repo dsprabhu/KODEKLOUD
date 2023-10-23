@@ -1,0 +1,100 @@
+## Kubernetes 
+## History of Kubernetes
+CLI tools: ctr,crictl (cri control), nerdctl (ner control)
+Initally Kubernetes was built to orchestrate Docker specifically in the beginning.
+After that Kubernetes only worked with Docker and didnt support any other container solutions.
+And then Kubernetes grew in popularity as container orchestrator.
+Now other container runtimes like Rocket wanted in. 
+So Kubernetes users needed it to work with container runtimes that are other than just Docker.
+So Kubernetes introduced an interface called "Container Runtime Interface(CRI)".
+so CRI allowed any vendor to work as a container runtime for Kubernetes so adhere to the OCI standards.
+
+### OCI standards (Open container Initiative)
+    imagespec: Image Spec means, how an image should be built.  
+    runtimespec: Run Time Spec means, how any container runtime should be developed.
+
+### Docker
+Docker wasnt built to support the CRI standards. Because Docker was built way before CRI was introduced.
+Kubernetes had to continue to support Docker aswell so it introduced what is known as "dockershim"(Docker Shim).
+which was hacky, but temporary way to continue to support Docker outside of the container runtime interface.
+so it was decided in version 1.24 release of kubernetes to remove Docker shim completely.
+
+Docker: Dcoker CLI, Docker API, BUILD, VOLUMES, AUTH, SECURITY, ContainerD (Demons of container runtime (Run C))
+
+ContainerD is CRI compatiable and can work directly with Kubernetes as all other runtimes.
+So ContainerD as a separte runtime and Docker Separtely. So support of Docker is removed.
+But all the Docker images continue to work because Docker followed the image spec and contiune to work with container D. But Docker was removed as a supported runtime from Kubernetes.
+
+### containerD
+ContainerD although is part of Dcoker is  a separte project. Now its a member of CNCF.
+
+Installing containerD: $ tar Cxzvf /usr/local containerd-1.6.2-linux-amd64.tar.gz
+
+1) ctr command line tool comes with containerD
+2) Not very user frienly 
+3) Only supports limited features
+
+CTR command can be used to perform basic container-related activies such as pull images.
+
+$ ctr images pull docker.io/library/radis:alpine
+$ ctr run docker.io/library/radis:alpine redis
+
+Not to be used for running or managing containers on a production environment.
+A better alternative recommended is the nerd control tool or nerdctl
+
+### CLI - nerdctl
+nerdctl provides a Docker-like CLI for containerD.
+nerdctl supports docker compose.
+nerdctl supports newest features in containerd which is not available in Docker CLI.
+    Encripted container images
+    Lazy pulling
+    P2P image distribution
+    Image signing and verifying
+    Namespaces in Kubernetes
+
+
+$ docker --> $ nerdctl
+$ docker run --name redis redis:alpine  --> nerdctl run --name redis redis:alpine
+$ docker run --name webserver -p 80:80 -d nginx -->  nerdctl run --name webserver -p 80:80 -d nginx
+
+### CLI - crictl (cry control tool used for rocket rkt)
+crictl provides a CLI for CRI compatible container runtimes
+Installed separately
+Used to inspect and debug container runtimes 
+    Not to create containers ideally
+Works across different runtimes.
+
+This tool is developed maintained by the kubernetes community. This tool works across all the different container runtimes. Its a debugging tool. you can technically create but kublets unware of crictl so it will be deleted.
+
+$ crictl
+$ crictl pull busybox
+$ crictl images
+$ crictl ps -a
+$ crictl exec -i -t 3e00sfsdfs4534gsg-0sdgusg909sfsfu ls
+$ crictl logs 3e00sfsdfs4
+$ crictl pods ( list pods)
+
+unsupported features
+
+--detach-keys, --sig-proxy
+--privileged, --user, --detach-keys
+--details
+Colum: NET/BLOCCKI/O,PIDs
+
+In the previous version of Kubernetes, prior to veriosn 1.24 , the crictl tool connected to runtime endpoints in the following default order as below.
+not support.
+unix:///var/run/dockershim.sock
+unix:///run/containerd/containerd.sock
+unix:///run/crio/crio.sock
+unix:///var/run/cri-dockerd.sock
+
+However, with the release of kubernetes 1.24 , supported below.
+
+$ crictl --runtime-endpoint
+$ export CONTAINER_RUNTIME_ENDPOINT
+
+
+
+
+
+
