@@ -2,7 +2,7 @@
 
 Node: Pysical or virtual which kubernetes is installed. Node is the worker machine that is containers by lauched by kuterneties. It is also known as minions.
 
-Cluster: its a setup of Nodes group together. multiple nodes sharing loads
+Cluster: its a setup of Nodes group together. multiple nodes sharing loads.
 
 Master: who is managing the reponsible for managing the cluster. cluster member information is stored. Responsible for failover. Master is another node.
 
