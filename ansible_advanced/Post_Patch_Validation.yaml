@@ -1,0 +1,234 @@
+---
+- name: Post Patch Validation
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  vars:
+    baseline_file: /tmp/prepatch_baseline/baseline.json
+    report_file: /tmp/postpatch_diff.txt
+    report_dir: "./reports"
+
+  tasks:
+
+    - name: Load baseline
+      slurp:
+        src: "{{ baseline_file }}"
+      register: baseline_raw
+
+    - name: Parse baseline
+      set_fact:
+        baseline: "{{ baseline_raw.content | b64decode | from_json }}"
+
+    - name: Capture current kernel
+      command: uname -r
+      register: kernel_now
+      changed_when: false
+
+    - name: Capture current boot time
+      command: who -b
+      register: boot_now
+      changed_when: false
+
+    - name: Capture current mounts
+      command: mount
+      register: mount_now
+      changed_when: false
+
+    - name: Capture current fstab
+      shell: grep -vE '^(#|$)' /etc/fstab
+      register: fstab_now
+      changed_when: false
+
+    - name: Capture current route
+      command: ip route
+      register: route_now
+      changed_when: false
+
+    - name: Capture current network
+      shell: ip a s | grep -i net
+      register: net_now
+      changed_when: false
+      failed_when: false
+
+    - name: Capture current swap
+      command: swapon -s
+      register: swap_now
+      changed_when: false
+
+    - name: Capture current environment
+      shell: cat /etc/environment
+      register: env_now
+      changed_when: false
+
+    - name: Build failed items list
+      set_fact:
+        failed_items: >-
+          {{
+            []
+            + (['FSTAB'] if baseline.fstab != fstab_now.stdout else [])
+            + (['ROUTE'] if baseline.route != route_now.stdout else [])
+            + (['NETWORK'] if baseline.network != net_now.stdout else [])
+            + (['SWAP'] if baseline.swap != swap_now.stdout else [])
+            + (['ENVIRONMENT'] if baseline.environment != env_now.stdout else [])
+          }}
+
+    - name: Generate report for failed servers
+      copy:
+        dest: "{{ report_file }}"
+        mode: "0644"
+        content: |
+          ================================================================================
+          POST PATCH VALIDATION REPORT
+          ================================================================================
+          Host : {{ inventory_hostname }}
+
+          INFO
+          ================================================================================
+
+          Kernel Before : {{ baseline.kernel }}
+          Kernel After  : {{ kernel_now.stdout }}
+
+          Boot Before   : {{ baseline.boot_time }}
+          Boot After    : {{ boot_now.stdout }}
+
+          ================================================================================
+
+          Failed Checks:
+          {% for item in failed_items %}
+          - {{ item }}
+          {% endfor %}
+
+          ================================================================================
+
+          {% if 'FSTAB' in failed_items %}
+          [FSTAB DIFFERENCE]
+
+          PRE:
+          {{ baseline.fstab }}
+
+          POST:
+          {{ fstab_now.stdout }}
+
+          ================================================================================
+          {% endif %}
+
+          {% if 'ROUTE' in failed_items %}
+          [ROUTE DIFFERENCE]
+
+          PRE:
+          {{ baseline.route }}
+
+          POST:
+          {{ route_now.stdout }}
+
+          ================================================================================
+          {% endif %}
+
+          {% if 'NETWORK' in failed_items %}
+          [NETWORK DIFFERENCE]
+
+          PRE:
+          {{ baseline.network }}
+
+          POST:
+          {{ net_now.stdout }}
+
+          ================================================================================
+          {% endif %}
+
+          {% if 'SWAP' in failed_items %}
+          [SWAP DIFFERENCE]
+
+          PRE:
+          {{ baseline.swap }}
+
+          POST:
+          {{ swap_now.stdout }}
+
+          ================================================================================
+          {% endif %}
+
+          {% if 'ENVIRONMENT' in failed_items %}
+          [ENVIRONMENT DIFFERENCE]
+
+          PRE:
+          {{ baseline.environment }}
+
+          POST:
+          {{ env_now.stdout }}
+
+          ================================================================================
+          {% endif %}
+
+          FINAL STATUS : FAIL
+      when: failed_items | length > 0
+
+    - name: Create reports directory on controller
+      delegate_to: localhost
+      become: false
+      file:
+        path: "{{ report_dir }}"
+        state: directory
+      run_once: true
+
+    - name: Create summary header
+      delegate_to: localhost
+      become: false
+      copy:
+        dest: "{{ report_dir }}/summary.csv"
+        content: |
+          Server,Status,Kernel_Before_patching,Kernel_After_patching,Issues
+      run_once: true
+
+    - name: Fetch failed report
+      fetch:
+        src: "{{ report_file }}"
+        dest: "{{ report_dir }}/{{ inventory_hostname }}_diff.txt"
+        flat: yes
+      when: failed_items | length > 0
+
+    - name: Update summary
+      delegate_to: localhost
+      become: false
+      lineinfile:
+        path: "{{ report_dir }}/summary.csv"
+        insertafter: EOF
+        line: >-
+          {{ inventory_hostname }},
+          {{ 'PASS' if failed_items | length == 0 else 'FAIL' }},
+          {{ baseline.kernel }},
+          {{ kernel_now.stdout }},
+          {{ failed_items | join(';') }}
+      throttle: 1
+
+    - name: Send email
+      delegate_to: localhost
+      become: false
+      run_once: true
+      shell: |
+        ATTACHMENTS="-a {{ report_dir }}/summary.csv"
+
+        for f in {{ report_dir }}/*_diff.txt
+        do
+          [ -f "$f" ] && ATTACHMENTS="$ATTACHMENTS -a $f"
+        done
+
+        cat <<EOF | mailx \
+        -s "Linux Post Patch Validation Report" \
+        -r satellite@wdc.com \
+        $ATTACHMENTS \
+        deepak.kumar1@wdc.com pdl-it-unix-support@wdc.com
+
+        Linux Post Patch Validation Report
+
+        Please find attached the validation report.
+
+        Summary contains:
+        - Server Status
+        - Kernel version Before and After patching
+        - Failed Checks (if any)
+
+        EOF
+      args:
+        executable: /bin/bash
