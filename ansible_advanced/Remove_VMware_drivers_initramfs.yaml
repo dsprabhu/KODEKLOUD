@@ -1,0 +1,81 @@
+- name: Remove VMware drivers from initramfs and blacklist them
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  vars:
+    vmware_modules:
+      - vmw_balloon
+      - vmxnet
+      - vmxnet3
+      - vmwgfx
+      - vmw_vmci
+      - vmw_pvscsi
+      - vmw_pvrdma
+      - vmhgfs
+      - vmci
+
+  tasks:
+
+    - name: Create dracut config to omit VMware drivers
+      copy:
+        dest: /etc/dracut.conf.d/omit-vmware.conf
+        content: |
+          hostonly="yes"
+          omit_drivers+=" {{ vmware_modules | join(' ') }} "
+        owner: root
+        group: root
+        mode: '0644'
+      register: dracut_conf
+
+    - name: Create blacklist file
+      copy:
+        dest: /etc/modprobe.d/blacklist-drvs.conf
+        content: |
+          {% for module in vmware_modules %}
+          blacklist {{ module }}
+          {% endfor %}
+        owner: root
+        group: root
+        mode: '0644'
+      register: blacklist_conf
+
+    - name: Get initramfs images from /boot
+      shell: |
+        ls /boot/initramfs-*.img | grep -Ev 'kdump|rescue'
+      register: initramfs_list
+      changed_when: false
+
+    - name: Extract kernel versions from filenames
+      set_fact:
+        kernel_versions: >-
+          {{ initramfs_list.stdout_lines
+             | map('regex_replace', '^/boot/initramfs-(.*)\.img$', '\1')
+             | list }}
+
+    - name: Show detected kernel versions
+      debug:
+        var: kernel_versions
+
+    - name: Rebuild initramfs
+      command: >
+        dracut -f /boot/initramfs-{{ item }}.img {{ item }}
+      loop: "{{ kernel_versions }}"
+      async: 1800
+      poll: 20
+      register: rebuild_result
+
+    - name: Verify VMware modules removed from all initramfs
+      shell: |
+        lsinitrd {{ item }} | grep -E "(^|/)({{ vmware_modules | join('|') }})\.ko" || true
+      loop: "{{ initramfs_list.stdout_lines }}"
+      register: verify_output
+      failed_when: false
+      changed_when: false
+
+    - name: Show verification results
+      debug:
+        msg: "{{ item.item }} → {{ 'CLEAN ' if item.stdout | trim == '' else item.stdout | trim }}"
+      loop: "{{ verify_output.results }}"
+      loop_control:
+        label: "{{ item.item }}"
