@@ -1,0 +1,127 @@
+- name: RHEL OS Patching via Satellite (Latest Available Updates)
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  pre_tasks:
+
+    - name: Validate supported OS
+      assert:
+        that:
+          - ansible_os_family == "RedHat"
+          - ansible_distribution_major_version | int in [7, 8, 9]
+        fail_msg: >
+          Unsupported OS detected.
+          This playbook supports only RHEL 7, 8, and 9.
+
+    - name: Set RHEL version facts
+      set_fact:
+        rhel_major: "{{ ansible_distribution_major_version }}"
+        rhel_minor: >-
+          {{
+            ansible_distribution_version.split('.')[1]
+            if '.' in ansible_distribution_version else '0'
+          }}
+
+    - name: Display detected OS version
+      debug:
+        msg: "Detected RHEL version: {{ rhel_major }}.{{ rhel_minor }}"
+
+    - name: Show current release lock
+      command: subscription-manager release --show
+      register: current_release
+      changed_when: false
+
+    - name: Display current release lock
+      debug:
+        msg: "Current release lock: {{ current_release.stdout }}"
+
+    - name: Remove release lock
+      command: subscription-manager release --unset
+      register: release_unset
+      changed_when: false
+
+    - name: Verify release lock status
+      command: subscription-manager release --show
+      register: release_after
+      changed_when: false
+
+    - name: Display release status after unset
+      debug:
+        msg: "Release status after unset: {{ release_after.stdout }}"
+
+  tasks:
+
+    - name: Capture running kernel version before patching
+      command: uname -r
+      register: kernel_before
+      changed_when: false
+
+    - name: Display current kernel
+      debug:
+        msg: "Kernel before patching: {{ kernel_before.stdout }}"
+
+    - name: Clean yum cache (RHEL 7)
+      command: yum clean all
+      when: rhel_major | int == 7
+
+    - name: Clean dnf cache (RHEL 8 and 9)
+      command: dnf clean all
+      when: rhel_major | int >= 8
+
+    - block:    
+    
+        - name: Apply security updates (RHEL 7) 
+          command: >
+            yum update -y
+            --setopt=rhel-7-server-rpms.sslverify=0
+            --setopt=rhel-7-server-optional-rpms.sslverify=0
+            --setopt=rhel-7-server-rh-common-rpms.sslverify=0
+            --setopt=rhel-7-server-supplementary-rpms.sslverify=0
+          register: yum_security_patch_rhel7
+          changed_when: "'Complete!' in yum_security_patch_rhel7.stdout"
+          when: rhel_major | int == 7
+
+        - name: Apply security updates (RHEL 8)
+          command: dnf update -y --disablerepo=* --enablerepo=rhel-8-for-x86_64-baseos-rpms --enablerepo=rhel-8-for-x86_64-appstream-rpms
+          register: yum_security_patch_rhel8
+          changed_when: "'Complete!' in yum_security_patch_rhel8.stdout"
+          when: rhel_major | int == 8
+
+        - name: Apply security updates (RHEL 9)
+          command: dnf update -y --disablerepo=* --enablerepo=rhel-9-for-x86_64-baseos-rpms --enablerepo=rhel-9-for-x86_64-appstream-rpms
+          register: yum_security_patch_rhel9
+          changed_when: "'Complete!' in yum_security_patch_rhel9.stdout"
+          when: rhel_major | int == 9
+ 
+      rescue:
+        - fail:
+            msg: >
+              Security patching failed after release lock enforcement.
+              Manual investigation required.
+
+      always:
+        - debug:
+            msg: "Security patching phase completed."
+
+    - name: Capture default kernel after patching
+      shell: grubby --default-kernel | awk -F'vmlinuz-' '{print $2}'
+      register: kernel_after
+      changed_when: false
+
+    - name: Capture system uptime
+      command: uptime
+      register: uptime_output
+      changed_when: false
+
+  post_tasks:
+
+    - name: Display patching summary
+      debug:
+        msg:
+          - "OS Version      : {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "Release Lock    : {{ release_after.stdout }}"
+          - "Kernel Before   : {{ kernel_before.stdout }}"
+          - "Kernel After    : {{ kernel_after.stdout }}"
+          - "Reboot Required : {{ kernel_before.stdout != kernel_after.stdout }}"
+          - "System Uptime   : {{ uptime_output.stdout }}"
