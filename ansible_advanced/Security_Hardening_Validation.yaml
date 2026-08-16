@@ -1,0 +1,23 @@
+- name: Security Hardening with Validation
+  hosts: all
+  become: yes
+  vars:
+    timestamp: "{{ ansible_date_time.date }}_{{ ansible_date_time.time | regex_replace(':', '-') }}"
+    backup_dir: "/root/security_backup_{{ timestamp }}"
+
+  tasks:
+      
+    - name: Capture current configuration (pre-check)
+      shell: |
+        cat /etc/login.defs | grep -v ^# | grep PASS || true
+        echo 
+        cat /etc/security/pwquality.conf | grep -v ^# || true
+        echo 
+        egrep -i 'remember|deny=10' /etc/pam.d/*-auth || true
+      register: pre_output
+      changed_when: false
+      failed_when: false
+
+    - name: Display current configuration
+      debug:
+        msg: "{{ pre_output.stdout_lines }}"
